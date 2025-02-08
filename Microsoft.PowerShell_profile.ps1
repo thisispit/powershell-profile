@@ -1,5 +1,5 @@
-### PowerShell Profile Refactor
-### Version 1.03 - Refactored
+### PowerShell Profile - Modified for Local Use
+### Version 1.03 - Refactored (Modified - No Updates, Faster Startup)
 
 $debug = $false
 
@@ -8,11 +8,7 @@ if ($debug) {
     Write-Host "#           Debug mode enabled        #" -ForegroundColor Red
     Write-Host "#          ONLY FOR DEVELOPMENT       #" -ForegroundColor Red
     Write-Host "#                                     #" -ForegroundColor Red
-    Write-Host "#       IF YOU ARE NOT DEVELOPING     #" -ForegroundColor Red
-    Write-Host "#       JUST RUN \`Update-Profile\`     #" -ForegroundColor Red
-    Write-Host "#        to discard all changes       #" -ForegroundColor Red
-    Write-Host "#   and update to the latest profile  #" -ForegroundColor Red
-    Write-Host "#               version               #" -ForegroundColor Red
+    Write-Host "#       DEBUG MODE IS ENABLED        #" -ForegroundColor Red
     Write-Host "#######################################" -ForegroundColor Red
 }
 
@@ -21,14 +17,8 @@ if ($debug) {
 ############                                                                                                         ############
 ############                                          !!!   WARNING:   !!!                                           ############
 ############                                                                                                         ############
-############                DO NOT MODIFY THIS FILE. THIS FILE IS HASHED AND UPDATED AUTOMATICALLY.                  ############
-############                    ANY CHANGES MADE TO THIS FILE WILL BE OVERWRITTEN BY COMMITS TO                      ############
-############                       https://github.com/ChrisTitusTech/powershell-profile.git.                         ############
-############                                                                                                         ############
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!#
-############                                                                                                         ############
-############                      IF YOU WANT TO MAKE CHANGES, USE THE Edit-Profile FUNCTION                         ############
-############                              AND SAVE YOUR CHANGES IN THE FILE CREATED.                                 ############
+############     THIS IS A MODIFIED VERSION FOR LOCAL USE. ONLINE UPDATES ARE REMOVED. MODIFY AS NEEDED.           ############
+############     Based on: https://github.com/ChrisTitusTech/powershell-profile.git - Version 1.03                ############
 ############                                                                                                         ############
 #################################################################################################################################
 
@@ -36,9 +26,6 @@ if ($debug) {
 if ([bool]([System.Security.Principal.WindowsIdentity]::GetCurrent()).IsSystem) {
     [System.Environment]::SetEnvironmentVariable('POWERSHELL_TELEMETRY_OPTOUT', 'true', [System.EnvironmentVariableTarget]::Machine)
 }
-
-# Initial GitHub.com connectivity check with 1 second timeout
-$global:canConnectToGitHub = Test-Connection github.com -Count 1 -Quiet -TimeoutSeconds 1
 
 # Import Modules and External Profiles
 # Ensure Terminal-Icons module is installed before importing
@@ -51,10 +38,11 @@ if (Test-Path($ChocolateyProfile)) {
     Import-Module "$ChocolateyProfile"
 }
 
-# Check for Profile Updates
+
+# Function to Manually Update Profile (if you ever want to) - KEPT FOR MANUAL UPDATES
 function Update-Profile {
     try {
-        $url = "https://raw.githubusercontent.com/ChrisTitusTech/powershell-profile/main/Microsoft.PowerShell_profile.ps1"
+        $url = "https://raw.githubusercontent.com/thisispit/powershell-profile/refs/heads/main/Microsoft.PowerShell_profile.ps1"
         $oldhash = Get-FileHash $PROFILE
         Invoke-RestMethod $url -OutFile "$env:temp/Microsoft.PowerShell_profile.ps1"
         $newhash = Get-FileHash "$env:temp/Microsoft.PowerShell_profile.ps1"
@@ -71,13 +59,9 @@ function Update-Profile {
     }
 }
 
-# skip in debug mode
-if (-not $debug) {
-    Update-Profile
-} else {
-    Write-Warning "Skipping profile update check in debug mode"
-}
+# Profile Update Check REMOVED - To disable automatic profile updates
 
+# PowerShell Update Function - KEPT FOR MANUAL UPDATES
 function Update-PowerShell {
     try {
         Write-Host "Checking for PowerShell updates..." -ForegroundColor Cyan
@@ -102,12 +86,8 @@ function Update-PowerShell {
     }
 }
 
-# skip in debug mode
-if (-not $debug) {
-    Update-PowerShell
-} else {
-    Write-Warning "Skipping PowerShell update in debug mode"
-}
+# PowerShell Update Check REMOVED - To disable automatic PowerShell updates
+
 
 function Clear-Cache {
     # add clear cache logic here
@@ -217,7 +197,7 @@ function uptime {
             } elseif ($lastBootStr -match '^\d{2}\.\d{2}\.\d{4}') {
                 $dateFormat = 'dd.MM.yyyy'
             }
-            
+
             # check time format
             if ($lastBootStr -match '\bAM\b' -or $lastBootStr -match '\bPM\b') {
                 $timeFormat = 'h:mm:ss tt'
@@ -244,7 +224,7 @@ function uptime {
 
         # Uptime output
         Write-Host ("Uptime: {0} days, {1} hours, {2} minutes, {3} seconds" -f $days, $hours, $minutes, $seconds) -ForegroundColor Blue
-        
+
 
     } catch {
         Write-Error "An error occurred while retrieving system uptime."
@@ -265,16 +245,16 @@ function hb {
         Write-Error "No file path specified."
         return
     }
-    
+
     $FilePath = $args[0]
-    
+
     if (Test-Path $FilePath) {
         $Content = Get-Content $FilePath -Raw
     } else {
         Write-Error "File path does not exist."
         return
     }
-    
+
     $uri = "http://bin.christitus.com/documents"
     try {
         $response = Invoke-RestMethod -Uri $uri -Method Post -Body $Content -ErrorAction Stop
@@ -365,12 +345,12 @@ function trash($path) {
 ### Quality of Life Aliases
 
 # Navigation Shortcuts
-function docs { 
+function docs {
     $docs = if(([Environment]::GetFolderPath("MyDocuments"))) {([Environment]::GetFolderPath("MyDocuments"))} else {$HOME + "\Documents"}
     Set-Location -Path $docs
 }
-    
-function dtop { 
+
+function dtop {
     $dtop = if ([Environment]::GetFolderPath("Desktop")) {[Environment]::GetFolderPath("Desktop")} else {$HOME + "\Documents"}
     Set-Location -Path $dtop
 }
@@ -475,7 +455,7 @@ $scriptblock = {
         'npm' = @('install', 'start', 'run', 'test', 'build')
         'deno' = @('run', 'compile', 'bundle', 'test', 'lint', 'fmt', 'cache', 'info', 'doc', 'upgrade')
     }
-    
+
     $command = $commandAst.CommandElements[0].Value
     if ($customCompletions.ContainsKey($command)) {
         $customCompletions[$command] | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
